@@ -1,0 +1,781 @@
+#!/bin/bash
+#       _                       
+#  __ _(_)_ __   __ _ _ __ ___  
+# / _` | | '_ \ / _` | '_ ` _ \ 
+#| (_| | | | | | (_| | | | | | |
+# \__, |_|_| |_|\__, |_| |_| |_|
+# |___/         |___/           
+#
+# gingm is not genmenu
+#
+########################################
+# Preleminary functions and variables
+# Needed to get off the ground.
+VERSION="0.0.3a"
+
+###############################
+
+# Zsh has problems without this
+if [ -n "$ZSH_VERSION" ]; then
+	setopt shwordsplit
+fi
+###############################
+
+
+# Check for dialog
+###############################
+chk_dialog(){
+
+which dialog >/dev/null
+
+if [ $? -ne 0 ]
+then
+	echo " --> 'dialog' not found.."
+ 	read -n 1 -p "Install dialog/Xdialog? [Y/n]"
+		case $REPLY in
+			
+			y)
+				$pkg_inst Xdialog dialog
+			;;
+			
+			n)	
+				echo " - To install, '$pkg_inst dialog ; $0'"
+			;;
+			
+			*)
+				echo "plurgh?"
+				chk_dialog
+			;;
+		esac
+fi
+}
+###############################
+
+oscheck(){
+# Determine which platform we're on - for dynamic menu building
+# Limited to apt and yum, with a focus on apt
+
+echo
+if [ -f /etc/REDHAT_RELEASE ]
+then
+	echo " * YUM/RPM Based system discovered.."
+	PKGTOOL="yum"
+else
+	if [ -f /etc/apt/sources.list ]
+	then
+		echo " * APT Based system discovered.."
+		PKGTOOL="apt-cache"
+	fi
+fi
+
+}
+###############################
+
+
+
+version(){
+echo "-------------------------------------------------------"
+cowsay "gingm $VERSION" 2> /dev/null
+echo "-------------------------------------------------------"
+echo $VERSION
+echo "Looking for system details..."
+}
+
+clear
+version
+
+# ABOUT
+# gingm is a fork of 'genmenu' by Geir Kristensen
+# Support for window managers other than WindowMaker has been removed.
+
+
+
+# THANKS
+# Geir Kristensen <gtk@gtk.no>
+# Jens Gjerdbakken <jens@nlc.no>
+# BatmanX (#windowmaker@openprojects) for help with the wmaker menu format
+# Kevin Verma <kevinverma@yahoo.com> for the Fluxbox support
+
+# LICENSE
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+# -----------------------------------------------------------------------------
+# Configuration
+
+# The programs to check for. Menus are generated in the order they appear here 
+# Format: "|" = start items, "!" = run in a terminal, "+" = end submenu.
+
+MENUITEMS="
+
+terminals | Eterm rxvt xterm Terminal.app konsole +
+
+browsers | $(apt-cache search "\-browser" | awk '{ printf " "$1}')+ 
+
+mail | evolution balsa pronto sylpheed spruce kmail exmh thunderbird !pine !mutt !elm +
+
+news | pan knode !trn !slrn !tin +
+
+messaging | pidgin xchat !xchat-text kvirc !BitchX !epic !epic4 !irssi !tinyirc ksirc gtalk kit gaim gnome-icu sim licq +
+
+file-Managers | konqueror fsviewer GWorkspace rox-filer endeavour2 gentoo +
+
+file-Transfer | gftp !yafc !ncftp !ftp iglooftp d4x pavuk gtm amule xmule gnapster !teknap !nap !gnut gtk-gnutella limewire gnutmeg + 
+
+graphics | inkscape gimp gimv pornview sodipodi geeqie krayon kpovmodeler bitmap xpaint xfig kpaint blender ksnapshot gphoto dia compupic gqview pixie display ee xv eog qiv +
+
+multimedia | rhythmbox banshee xmms gqmpeg freeamp realplayer kmid kmidi gmix gtcd alsamix !aumix !rexima grip aviplay gtv gvlc sinek xine gmplayer aktion gcd xawtv xcdroast xplaycd +
+
+music | soundtracker artsbuilder artstracker artscontrol timidity grecord +
+
+editors |$(apt-cache pkgnames editor | awk '{ printf " "$1}')+ 
+
+games | $(apt-cache pkgnames game | awk '{ printf " "$1}')+
+
+emulators | $(apt-cache pkgnames emulator | awk '{ printf " "$1}' | grep -v term)+
+
+viewers | $(apt-cache pkgnames viewer | grep viewer | awk '{ printf " "$1}')+
+
+utilities | $(apt-cache pkgnames network utility | grep -v "lib"| grep -v "firmware" | awk '{ printf " "$1}')+
+
+work | symphony abiword kword openoffice soffice kpresenter lyx klyx gnucash gnumeric kspread kchart gcalc kcalc xcalc gnomecal gnomecard korganizer kab karm quanta symphony+ 
+
+development | eclipse glimmer glade kdevelop designer kbabel idle ghex khexedit memprof !tclsh !python !gdb xxgdb !xev +
+
+system | gtop !top kpm bp6mon gw guname gnorpm red-carpet monkeytalk bug-buddy gnomecc gkrellm !sndconfig tksysv ksysv gnome-ppp kppp qtisdnlinux internet-config firewall-config printconf-gui +"
+
+# Shells to check for
+
+CHKSHELLS="mc sh bash ash sash csh tcsh ksh pdksh zsh"
+
+# Blackbox specific apps to check for
+
+BLACKBOX_APPS="blackbox | bbkeys bbkeysconf bbappconf toolbox whiteBOX bbrb bbmail bbsload bbppp bbdate bbws bbpager bbtime bbweather bbpal bbrun bbapm +"
+
+# FluxBox specific apps to check for
+FLUXBOX_APPS="fluxbox | fluxconf fluxkeys +"
+
+# Window Maker specific apps to check for
+# Needs a little 'grep -v' action to remove things beginning with 'wm' that aren't dockapps..
+
+WMAKER_APPS="wmaker | $(apt-cache pkgnames | sort | grep "^wm" | awk '{printf " "$1}')"
+echo "-------------------------------"
+echo "Installed WindowMaker Apps:"
+echo $WMAKER_APPS
+echo "-------------------------------"
+echo
+# This has been replaced with an apt-cache search above..
+#WMAKER_APPS="WindowMaker | alltray ascd asmon docker fookb-plainx fookb-wmaker fspanel gnustep-icons gsetroot gtk-imonc libwings-dev mixer.app mountapp shermans-aquarium wdm wmacpi wmail wmaker wmaker-data wmauda wmavgload wmbattery wmbiff wmcalc wmcalclock wmcb wmcdplay wmcpuload wmdiskmon wmdonkeymon wmfire wmforkplop wmfsm wmgrabimage wmibam wmifs wmmail wmmaiload wmmemload wmmixer wmmoonclock wmnd wmnd-snmp wmnet wmnetselect wmnut wmpomme wmppp.app wmpuzzle wmrack wmsensors wmspaceweather wmsun wmsysmon wmtictactoe wmtimer wmtop wmtv wmtz wmweather wmweather+ wmwork wmxmms2 xfce4-wmdock-plugin xlassie +"
+
+# Enlightenment specific apps to check for
+
+E_APPS="Enlightenment | $(apt-cache pkgnames | sort | grep "^e1" | awk '{printf " "$1}')
+
+# Window managers to check for
+
+WINDOWMANAGERS="$(apt-cache search window manager | awk '{printf " "$1}')
+
+# Fonts to check for 
+
+FONTS="fixed 5x8 6x10 6x9 6x12 6x13 6x13bold 7x13 7x13bold 7x14 7x14bold 8x13 8x
+13bold 10x20 12x24 anorexia bright bright.no bright.se cure drift edges tixus fkp gelly glisp-bold glisp kates7x14 knickers lime mints-mild mints-strong nex6x10 nu outcas t outcast.no outcast.se outcast.all peq2 peq peq.no peq.se peq.all sabvga shine shine.no shine.se shine.all smoothansi snap vga11x19 vga zaber zaber.no zone"
+
+# Browser window sizes to ask about
+BROWSERSIZES="1024x768 1280x1024 1366x768 1400x900 1600x1200"
+
+
+# Terminals to check for (note: only shown in the terminal selection list)
+CHKTERMINALS="aterm Eterm rxvt xterm gnome-terminal multi-gnome-terminal konsole Terminal.app"
+
+# Screensaver command
+LOCKCOMMAND="xscreensaver-command"
+LOCKOPTIONS="-lock"
+
+###########################################
+# BEGIN functions 
+###########################################
+
+
+
+#######################################
+# Find programs - use pkgtool to determine
+
+findprog() 
+{
+	local found OLDIFS="$IFS"
+	IFS=":"
+
+	for p in $PATH; do
+		if [ -x "${p}/${1}" ]; then
+			found="1"
+		fi
+	done
+
+	if [ -z "$1" ]; then
+ 		found="0"
+	fi
+
+	IFS="$OLDIFS"
+
+	if [ "$found" = "1" ]; then
+		return 0 
+	else
+		return 1 
+	fi
+}
+
+##########################################
+# Build menu
+# - TODO: trace structure - execution
+
+realmenu()
+{
+ echo -e "\nBuilding menu structure\n"
+	local item app lock="0" submenu charone nritems tmp_menu 
+
+	for item in $MENUITEMS; do
+
+		echo -n " * "
+
+		if [ "$lock" = "1" -a "$item" != "+" ]; then
+			app="$item"
+			charone="$(echo $app | cut -c1)"
+
+			if [ "$charone" = "!" ]; then
+				# hack, just assume it won't be longer than 100
+				app="$(echo $app | cut -c2-100)"
+				findprog $app && submenu="${submenu}${item} "
+			else
+				findprog $app && submenu="${submenu}${item} "
+			fi
+
+		else
+			submenu="${submenu}${item} "
+		fi
+
+		if [ "$item" = "+" ]; then
+			nritems="0"
+
+			for i in $submenu; do
+				nritems="$(($nritems + 1 ))"
+			done
+
+			if [ "$nritems" -gt "3" ]; then
+				tmp_menu="${tmp_menu}${submenu} "
+			fi
+			unset submenu 
+		fi
+
+		if [ "$item" = "|" ]; then
+			lock="1"
+		elif [ "$item" = "+" ]; then
+			lock="0"
+		fi
+	done
+
+	echo
+	export MENUITEMS="$tmp_menu"
+}
+
+count_menuitems()
+{
+	local item nr="0"
+
+	for item in $MENUITEMS; do
+		nr="$(($nr + 1))"
+	done
+
+	export NR_MENUITEMS="$nr"
+}
+
+terminals()
+{
+	# Prompt user for the prefered terminal and set up $TERMINAL. All console apps
+	# (apps that are prefixed with ! will be launched with this terminal.
+
+	local thisterm foundterm tmp_terminals
+
+	for thisterm in $CHKTERMINALS; do
+		foundterm="0"
+		findprog $thisterm && foundterm="1"
+
+		if [ "$foundterm" = "1" ]; then
+			tmp_terminals="$tmp_terminals $thisterm"
+		fi
+	done
+
+	PS3="Select X terminal: "
+
+	until [ -n "$TERMINAL" ]; do
+		echo -e "\nDefault X terminal? (will be used to launch all console apps in the menu)"
+			select TERMINAL in $tmp_terminals; do
+				break
+			done
+		done
+
+	echo "You selected: \"$TERMINAL\""
+
+	export TERMINAL="$(defaults "$TERMINAL")"
+}
+
+defaults()
+{
+	# How the programs that must have more sane default options specified are 
+	# handled. Otherwise the program is started with no options. 
+
+	local Etermver
+
+	case $1 in
+	aterm)  echo "aterm -rv +sb -tr -sh 50 -fn $FONT -sl 2000" ;;
+	rxvt)   echo "rxvt -rv +sb -fn $FONT -fb $FONT" ;;
+	xterm)  echo "xterm -rv +sb -fn $FONT" ;;
+	Terminal.app)  echo "Terminal.app" ;;
+	Eterm) 
+
+		Etermver="$(Eterm --version | head -n1 | cut -f2 -d" ")"
+
+		case $Etermver in
+		0.8.10) echo "Eterm -t Abceba2010 -F $FONT" ;;
+		0.9)    echo "Eterm -t Abceba2010 -F $FONT" ;;
+		*)      echo "Eterm -t Abceba2010 -F $FONT" ;;
+		esac
+	;;
+
+	google-chrome)        echo "google-chrome -width $WIDTH -height $HEIGHT" ;;
+	firefox)        echo "firefox -width $WIDTH -height $HEIGHT" ;;
+	opera)          echo "opera -geometry ${WIDTH}x${HEIGHT}" ;;
+	bbkeys)         echo "bbkeys -i" ;;
+	wmclock)        echo "wmclock -shape" ;;
+	wmdate)         echo "wmdate -s" ;;
+	wmSMPmon)       echo "wmSMPmon -g 2" ;;
+	pavuk)          echo "pavuk -X" ;;
+	*)              echo $1
+	esac
+}
+
+app_translate()
+{
+	# Programs which have a longer name than the binary name we check for are 
+	# handled here.
+
+	case $1 in
+	program-name)   echo "The longer program name" ;;
+	google-chrome)   echo "Google Chrome" ;;
+	symphony)   echo "Lotus Symphony" ;;
+	gmplayer)	echo "Mplayer - GTK" ;;
+	acroread)	echo "Adobe Acrobat Reader" ;;
+        gimv)           echo "GImageView" ;;
+        *)              echo $1
+	esac
+}
+
+wm_translate()
+{
+	# Window managers which have a longer name than the 
+	# binary name we check for are handled here.
+
+	case $1 in
+	wmaker) echo "Window Maker" ;;
+	*)      echo $1
+	esac
+}
+
+ucfirst()
+{
+	local str="$@"
+	echo "$(echo $str | cut -c1 | tr 'a-z' 'A-Z')$(echo $str | cut -c2-100)" 
+}
+
+yesno()
+{
+	local key
+
+	echo
+
+	while :; do 
+		echo -n "$1 [y/n] "
+		read key
+
+		case $key in
+		n|N) return 1 ;;
+		y|Y) break ;;
+		esac
+	done
+}
+
+get_shells()
+{
+	# We need to weed out the shells that only are symlinks to the real shell
+
+	local shell tmpshells
+
+	for shell in $CHKSHELLS; do
+		thisshell="$(which $shell 2>/dev/null)"
+
+		if [ -f "$thisshell" -a ! -h "$thisshell" ]; then
+			tmpshells="$tmpshells !$shell"
+		fi
+
+	done
+
+	shells="shells |$tmpshells +"
+
+	export MENUITEMS="$MENUITEMS $shells"
+}
+
+select_font()
+{
+	local thisfont word foundfonts
+
+	if [ -z "$DISPLAY" ]; then
+		FONT="fixed"
+		return
+	fi
+
+	for thisfont in $FONTS; do
+		for word in $(xlsfonts $thisfont 2>&1) ; do
+			if [ "$word" != "xlsfonts:" ]; then
+				foundfonts="$foundfonts $thisfont"
+			fi
+			break
+		done
+	done
+
+	PS3="Select font: "
+	until [ -n "$FONT" ]; do
+		echo -e "\nDefault font to use in all X terminals?"
+			select FONT in $foundfonts; do
+				break
+		done
+	done
+
+	echo "You selected: \"$FONT\""
+	export FONT
+}
+
+browser_size()
+{
+	local size
+
+	PS3="Select size: "
+	until [ -n "$size" ]; do
+		echo -e "\nDefault size of all web browser windows?"
+			select size in $BROWSERSIZES; do
+				break
+			done
+		done
+	echo "You selected: \"$size\""
+
+	export WIDTH="$(echo $size | cut -d"x" -f1)"
+	export HEIGHT="$(echo $size | cut -d"x" -f2)"
+}
+
+wm_run()
+{
+	echo " (\"Run...\", SHEXEC, \"%a(Run,Type command to run:)\"),"
+}
+
+wm_workspace_list()
+{
+	echo " (\"Workspace List\", WORKSPACE_MENU),"
+}
+
+wm_workspace()
+{
+cat <<EOF
+  ("Workspace",
+   ("Hide Others", HIDE_OTHERS),
+   ("Show All", SHOW_ALL),
+   ("Arrange Icons", ARRANGE_ICONS),
+   ("Refresh", REFRESH),
+EOF
+
+cat <<EOF
+   ("Save Session", SAVE_SESSION),
+   ("Clear Session", CLEAR_SESSION)
+  ),
+EOF
+}
+
+wm_about()
+{
+	echo "  (\"About\", INFO_PANEL),"
+}
+
+wm_prog()
+{
+	echo -ne "   (\"$1\", EXEC, \"$2\")"
+}
+
+mintospc()
+{
+	echo $@ | tr '-' ' '
+}
+
+wm_submenu()
+{
+	echo -ne "  $(mintospc "$1")$2"
+}
+
+prog() 
+{
+	local app="$1" charone
+
+	charone="$(echo $app | cut -c1)"
+
+	if [ "$charone" = "!" ]; then
+		app="$(echo $app | cut -c2-100)"
+
+		case $WM in
+		wmaker)	wm_prog "$(ucfirst "$(app_translate $app)")" "$TERMINAL -e "$(defaults $app)"" ;;
+		esac
+
+	else
+		case $WM in
+		wmaker)	wm_prog "$(ucfirst "$(app_translate $app)")" "$(defaults $app)" ;;
+		esac
+	fi
+}
+
+programs()
+{
+	# this is the main menu generating function in the program, handling 3
+	# different menu formats in here is nasty but works. I dont want to try
+	# and understand the logic in here anymore but there are no known bugs.
+
+	local sublock item item_nr="0"
+
+	case $WM in
+	wmaker)	wm_submenu " (\"Applications\"," "\n" ;;
+	esac
+
+	sublock="0"
+	previtem="+"
+
+	for item in $MENUITEMS; do
+		echo -n " * " >&2
+
+		if [ "$WM" = "wmaker" ]; then
+			if [ "$previtem" != "+" -a "$item" != "+" -a "$previtem" != "|" -a "$item" != "|" ]; then
+				echo -ne ",\n"
+			fi
+		fi
+
+		previtem="$item"
+
+		if [ "$sublock" = "0" ]; then
+			case $WM in
+			*box)	bb_submenu "  " "$(ucfirst $item)" ;;
+			*)
+					if [ "$WM" = "wmaker" -a "$item" != "-" ]; then
+						wm_submenu "  (\"$(ucfirst $item)\"," "\n"
+					elif [ "$WM" = "e" ]; then
+						ESUBTITLE="$item"
+						e_submenu "$(ucfirst $item)" " NULL menu \"genmenu/${item}.menu\"\n" >> $ECONFDIR/genmenu.menu
+						e_submenu "$(ucfirst $item)" "\n" > $ECONFDIR/genmenu/${item}.menu
+					fi
+			esac
+
+			sublock="1"
+
+		elif [ "$item" != "+" -a "$item" != "|" ]; then
+			prog "$item"
+		fi
+
+		if [ "$item" = "+" ]; then
+			case $WM in
+			wmaker)
+				if [ "$item" = "+" -a "$item_nr" -lt "$(($NR_MENUITEMS - 1))" ]; then
+					echo  -ne "\n  ),\n"
+				elif [ "$item" = "+" ]; then
+					echo -ne "\n  )\n  ),\n" # last item
+				fi
+			esac	
+			sublock="0"
+		fi
+
+		item_nr="$(($item_nr + 1 ))"
+
+	done
+
+}
+
+wm_begin()
+{
+	echo "(\"WindowMaker\","
+}
+
+
+wm_appearance()
+{
+	local chkwmdir="/usr/share/WindowMaker /usr/local/share/WindowMaker /usr/X11R6/share/WindowMaker"
+	local dir wmdir
+
+	for dir in $chkwmdir; do
+		if [ -d "${dir}/Themes" ]; then
+			wmdir="$dir"
+			break
+		fi
+	done 
+
+cat <<EOF
+  ("Appearance",
+   ("Themes", OPEN_MENU, "-noext $wmdir/Themes \$HOME/GNUstep/Library/WindowMaker/Themes WITH setstyle"),
+   ("Styles", OPEN_MENU, "-noext $wmdir/Styles \$HOME/GNUstep/Library/WindowMaker/Styles WITH setstyle"),
+   ("Icon Sets", OPEN_MENU, "-noext $wmdir/IconSets \$HOME/GNUstep/Library/WindowMaker/IconSets WITH seticons"),
+   ("Backgrounds", OPEN_MENU, "-noext /usr/share/wallpapers $wmdir/Backgrounds \$HOME/GNUstep/Library/WindowMaker/Backgrounds WITH wmsetbg -u -t"),
+   ("Save Theme", SHEXEC, "getstyle -t \$HOME/GNUstep/Library/WindowMaker/Themes/\\"%a(Theme name)\\""),
+   ("Save IconSet", SHEXEC, "geticonset \$HOME/GNUstep/Library/WindowMaker/IconSess/\\"%a(IconSet name)\\"")
+  ),
+EOF
+}
+
+wm_preferences()
+{
+	local chkwprefsapp="/usr/lib/GNUstep/System/Applications/WPrefs.app/WPrefs /usr/local/lib/GNUstep/System/Applications/WPrefs.app/WPrefs /usr/X11R6/GNUstep/Apps/WPrefs.app/WPrefs /usr/local/GNUstep/Apps/WPrefs.app/WPrefs"
+
+	local thisapp wprefsapp
+
+	for thisapp in $chkwprefsapp; do
+		if [ -x "$thisapp" ]; then
+			wprefsapp="$thisapp"
+			break
+		fi
+	done
+
+	echo " (\"Preferences\", EXEC, \"$wprefsapp\"),"
+}
+
+
+wm_restart ()
+{
+ echo " (\"Restart\", RESTART),"
+}
+
+wm_others()
+{
+	local thiswm tmp_wm tmp_windowmanagers nrwms="0" wmnow="0"
+
+	for thiswm in $WINDOWMANAGERS; do
+		findprog $thiswm && tmp_windowmanagers="$tmp_windowmanagers $thiswm"
+	done
+
+	for thiswm in $tmp_windowmanagers; do
+		# wmaker is ignored below so dont count it
+		if [ "$thiswm" != "wmaker" ]; then
+			nrwms="$(($nrwms + 1 ))" 
+		fi
+	done
+
+	echo -n " (\"Others\","
+
+	for thiswm in $tmp_windowmanagers; do
+		if [ "$thiswm" != "wmaker" ]; then
+			wmnow="$(($wmnow + 1 ))"
+		fi
+
+		if [ "$thiswm" != "wmaker" ]; then
+			echo -en "\n  (\"Start $(ucfirst "$(wm_translate $thiswm)")\", RESTART, \"$thiswm\")"
+		fi
+
+		if [ "$nrwms" -gt "$wmnow" -a "$thiswm" != "wmaker" ]; then
+			echo -n ","
+		fi
+	done
+
+	echo -e "\n ),"
+}
+
+wm_exit()
+{
+	findprog $LOCKCOMMAND && echo " (\"Lock Screen\", EXEC, \"$LOCKCOMMAND $LOCKOPTIONS\"),"
+
+cat <<EOF
+ ("Exit", EXIT)
+)
+EOF
+}
+
+
+wm_writemenu()
+{
+	wm_begin
+	programs
+	wm_run
+	wm_appearance
+	wm_workspace_list
+	wm_workspace
+	wm_preferences
+	wm_about 
+	wm_restart
+	if [ "$DOOTHERS" = "1" ]; then
+		wm_others
+	fi
+	wm_exit
+}
+
+wm_interactive()
+{
+	local wmrc menu 
+
+	wmrc="$HOME/GNUstep"
+	menu=./WMRootMenu.$(date +%Y%m%d)
+
+	if [ ! -e "$wmrc" ]; then
+		echo -e "\nUnable to find $wmrc, please run wmaker.inst to generate it!\n"
+		exit 1
+	fi
+
+	if [ -f "$menu" ]; then
+		yesno "$menu does already exist. Overwrite?"
+	fi
+
+	echo -e "\nWriting WindowMaker menu as\n$menu"
+	touch $menu
+	wm_writemenu > $menu
+	
+ echo
+}
+
+
+main()
+{
+	local tmp_menuitems
+
+	get_shells
+	select_font
+	terminals
+	browser_size
+
+	tmp_menuitems="$MENUITEMS"
+
+	findprog wmaker && {
+			WM="wmaker"
+			MENUITEMS="$tmp_menuitems $WMAKER_APPS"
+			realmenu
+			# need to know when it ends for the nasty proplist format 
+			count_menuitems
+			wm_interactive
+	}
+
+
+	echo -e "\nSome window managers might need to be restarted for the" 
+	echo -e "changes to take effect. This is usually a menu option.\n"
+}
+oscheck
+chk_dialog
+main
+
+# end

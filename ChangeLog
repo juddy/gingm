@@ -1,0 +1,223 @@
+Fri Jul 20 18:59:31 CEST 2001 gtk
+
+  * Changed name from genbbmenu to genmenu.
+  * Released 0.8.1a alpha version
+
+Sat Jul 21 19:05:25 CEST 2001 gtk
+
+  * Translated - to space in menuitems
+  * Added the restart option back to the WindowMaker menu
+  * Made WindowMaker more similar to the Blackbox menu (better organized)
+  * Made selection of default X terminal possible
+
+Mon Jul 23 16:49:35 CEST 2001 gtk
+
+  * Finished the webpage and the docs
+  * Released genmenu 0.8.1
+
+Wed Jul 25 11:58:22 CEST 2001 gtk
+  * Added xawtv to multimedia
+  * The cursor for Eterm-0.8.10 is now white
+  * Added syplheed to mail
+
+Fri Jul 27 11:05:33 CEST 2001 gtk 
+  * Added licq to messaging
+
+Mon Jul 30 14:20:08 CEST 2001 gtk 
+  * Added idle to development
+  * Released genmenu 0.8.2
+
+Tue Jul 31 12:54:14 CEST 2001 gtk 
+  * Added the citrcix client wfcmgr to utilities
+  * The cursor color for Eterm-0.9 is now white too
+
+Tue Aug  7 13:56:38 CEST 2001 gtk 
+  * Added bitmap and xfig to graphics
+  * Added gless to viewers
+  * Added gtcd to multimedia
+  * Added gnp to editors
+  * Added xev and gdb to development
+  * Added guname to system
+
+Wed Aug  8 03:17:35 CEST 2001 gtk
+  * Fixed a typo which made xterminals which was not installed show up
+    during the terminal selection.
+  * Fixed a bug which generated a comma to much causing the wmaker menu to not 
+    work.
+  * Added more window managers to the list
+
+Wed Aug  8 20:18:36 CEST 2001 gtk
+  * Changed the cursor color of Eterm 0.9.1 to white
+  * Add a Lock Screen option in the root menu if xlock is found
+  * Released genmenu 0.8.3
+
+Fri Aug 10 04:53:32 CEST 2001 gtk
+  * Added yafc to file transfer
+
+Wed Aug 22 07:22:11 CEST 2001 gtk
+  * Scrollbar is set to off on Eterm 0.9.x
+  * Added bp6mon to system
+
+Sat Aug 25 14:22:42 CEST 2001 gtk
+  * Big cleanups and re-indenting of the script
+  * All global variables are now uppercase
+  * Enlightenment support
+  * Added chromium to games
+  * Added new category emulators and added vmware, xdosemu, dosemu and uae
+  * Added tclsh and python to development
+  * Added wmclock, wmtime, wmdate and wmxmms to window maker apps
+
+Mon Aug 27 04:55:52 CEST 2001 gtk
+  * Documentation updates
+  * Released genmenu 0.8.4
+
+Fri Sep 14 16:08:38 CEST 2001 gtk
+  * Added dillo to browsers
+
+Thu Sep 27 05:59:43 CEST 2001 gtk
+  * At the request of Jens Gjerdbakken I removed the comments from the top of 
+    the generated blackbox menu
+
+Thu Oct  4 21:59:22 CEST 2001 gtk
+  * Added mplayer to multimedia
+
+Sun Oct  7 17:24:20 CEST 2001 gtk
+  * Added d4x and pavuk to file-transfer
+
+Tue Oct  9 13:08:33 CEST 2001 gtk
+  * Added alsamixer to multimedia
+  * Removed xmixer from multimedia
+  * Added quanta to work
+
+Tue Nov 27 05:55:57 CET 2001 gtk
+  * Fluxbox and Waimea added to the Others menu
+  * Possibly other minor stuff I don't remember
+  * Documentation updates
+  * Released genmenu 0.8.5
+
+Fri Nov 30 23:08:18 UTC 2001 gtk
+  * Added gvlc to multimedia
+
+Sat Dec 15 20:58:37 CET 2001 gtk
+ * If blackbox was installed in /usr/local from source the Default Themes item 
+   wouldn't show up on the menu even if selected
+
+Tue Dec 18 19:08:14 CET 2001 gtk
+ * Added spruce to mail
+ * Added cooledit to editors
+ * Added compupic and qiv to graphics
+ * Added quake2 to games 
+
+Wed Dec 26 18:38:47 CET 2001 gtk
+ * If Window Maker 0.80.0 was installed from source the correct path to the
+   Wprefs.app would not be available through the Preferences menu option
+
+Fri Jan  4 22:20:47 CET 2002 gtk
+ * Added Urban Terror to games
+
+Fri Feb  1 05:48:02 CET 2002 gtk
+ * Added whiteBOX to the blackbox menu
+
+Wed Feb  6 09:44:36 CET 2002 gtk
+ * Released genmenu 0.8.6
+
+Tue Feb 12 13:35:20 CET 2002 gtk
+ * Added knickers to fonts
+ * Changed the shebang on top of the script from /bin/sh to /bin/bash as it
+   really doesn't work with plain /bin/sh anymore.
+
+Wed Mar 20 13:21:01 CET 2002 gtk
+ * /usr/bin/eesh was hardcoded in the script which made the "Restart" and
+   "Logout" buttons to break on a SuSE box where eesh was in /usr/X11R6/bin.
+ * Made it easier to select what Screensaver to use. Just fill in your own
+   values for LOCKCOMMAND and LOCKOPTIONS
+ * Released genmenu 0.8.7
+
+Mon Mar 25 15:34:14 CET 2002 gtk
+ * Fluxbox support
+ * Added xqf to games
+ * Released genmenu 0.8.8
+
+Tue May 28 14:46:33 CEST 2002 gtk
+ * Added sinek to multimedia
+
+Thu Jun 13 09:11:07 CEST 2002 gtk
+ * Added metacity to window managers
+
+Tue Jul 16 03:19:42 CEST 2002 gtk
+ * Added gtk-gnutella to file transfer
+
+Tue Jul 30 22:02:42 CEST 2002 gtk
+ * Added openbox to window managers
+
+Tue Aug 13 18:57:34 CEST 2002 gtk
+ * Released genmenu 0.8.9
+
+Wed Aug 14 20:17:01 CEST 2002 gtk
+ * Added golem to window managers
+
+Mon Oct 14 19:40:37 CEST 2002 gtk
+ * Added gpsdrive to utilities
+ * Released genmenu 0.9.0
+
+Wed Oct 30 12:19:50 CET 2002 gtk
+ * Added tinyirc to messaging
+
+Fri Nov 29 10:00:34 CET 2002 gtk
+ * Added kpovmodeler
+ * Blackbox and derivates support is now generic this means Openbox is now 
+   also supported.
+ * Other cleanups
+ * Released genmenu 1.0
+
+Mon Dec 16 13:43:34 CET 2002 gtk
+ * Check if an actual Themes dir is inside the wmaker datadir in
+   wm_appearance() as it was not in Mandrake Linux, patch from Carlos R Mafra 
+   <crmafra@mafra.eti.br>
+
+Sat Jan 18 12:56:21 CET 2003 gtk
+ * Released genmenu 1.0.1
+
+Sat Apr  5 16:17:43 CEST 2003 gtk
+ * Added sim (Simple Instant Messenger) to messaging
+ * Added phoenix to browsers
+ * Released genmenu 1.0.2
+
+Thu Jun 12 02:42:41 CEST 2003 gtk
+ * Added multi-gnome-terminal to Terminals
+ * Released genmenu 1.0.3
+
+Mon Sep  8 17:59:49 CEST 2003 gtk
+ * Fixed the entry for gui mplayer
+ * gdict -> gnome-dictionary
+ * Released genmenu 1.0.4
+
+Fri Nov 14 09:58:34 CET 2003 gtk
+ * Added amule and xmule to File Transfer
+
+Tue Jan 20 07:23:51 CET 2004 gtk
+ * Added endeavour2 and gentoo to File Managers
+ * Added pornview to graphics
+ * Added SciTE to editors
+ * Released genmenu 1.0.5
+
+Thu Jan 29 16:04:54 CET 2004 gtk
+ * Added GImageView to Graphics
+ * Released genmenu 1.0.6 
+
+Tue Jun 22 10:19:22 CEST 2004 gtk
+ * Phoenix -> Firefox
+
+Wed Jun 23 13:06:05 CEST 2004 gtk
+ * Added openoffice to work
+
+Wed Jul  7 15:04:59 CEST 2004 gtk
+ * Added thunderbird to mail
+ * Released genmenu 1.0.7
+
+
+Mon Aug  9 12:00:17 MDT 2010 j
+ * Changed to gingm
+ * Removed all but WindowMaker functions
+
+
